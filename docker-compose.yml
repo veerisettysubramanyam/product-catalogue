@@ -1,0 +1,30 @@
+# Runs the backend plus Mailpit (a local SMTP server with a web inbox).
+# Works with no .env file; copy .env.example to .env to override anything.
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      PORT: 3000
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      FAKE_STORE_BASE_URL: ${FAKE_STORE_BASE_URL:-https://fakestoreapi.com}
+      FAKE_STORE_TIMEOUT_MS: ${FAKE_STORE_TIMEOUT_MS:-5000}
+      PRODUCT_CACHE_TTL_SECONDS: ${PRODUCT_CACHE_TTL_SECONDS:-300}
+      EMAIL_TRANSPORT: smtp
+      SALES_INBOX: ${SALES_INBOX:-sales@example.com}
+      EMAIL_FROM: ${EMAIL_FROM:-catalogue@example.com}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      ENQUIRY_RATE_LIMIT_PER_MINUTE: ${ENQUIRY_RATE_LIMIT_PER_MINUTE:-5}
+    depends_on:
+      - mailpit
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "8025:8025" # web inbox: http://localhost:8025
+      - "1025:1025" # SMTP
+    restart: unless-stopped
