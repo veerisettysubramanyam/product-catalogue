@@ -1,7 +1,7 @@
 import Foundation
 
 /// Thin JSON-over-HTTP client for our backend. Knows nothing about products.
-struct APIClient: Sendable {
+struct APIClient: HTTPClient {
     let baseURL: URL
     let session: URLSession
 
@@ -10,7 +10,7 @@ struct APIClient: Sendable {
         self.session = session
     }
 
-    func get<Response: Decodable>(_ path: String, query: [URLQueryItem] = []) async throws -> Response {
+    func get<Response: Decodable>(_ path: String, query: [URLQueryItem]) async throws -> Response {
         let request = try makeRequest(path: path, query: query, method: "GET", body: nil)
         return try await send(request)
     }

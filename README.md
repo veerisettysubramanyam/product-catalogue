@@ -82,7 +82,7 @@ cd ios && xcodebuild test -project ProductCatalogue.xcodeproj -scheme ProductCat
 Or press **⌘U** in Xcode. Replace `iPhone 17` with any simulator you have installed.
 
 - **Backend (35 tests):** the Fake Store mapping, caching and failure handling; every endpoint, including curated ordering, search matching, 404/400/502 paths, enquiry validation (including header injection), email failure and rate limiting.
-- **iOS (22 tests):** every view model (loading, failure, retry, cancellation, enquiry validation and server errors) and the API client against stubbed HTTP responses.
+- **iOS (30 tests):** every view model (loading, failure, retry, cancellation, enquiry validation and server errors), each repository against a mock `HTTPClient` (endpoints, parameters, DTO mapping), and the API client against stubbed HTTP responses.
 
 ## API
 

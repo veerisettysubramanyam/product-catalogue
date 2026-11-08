@@ -1,7 +1,7 @@
 import Foundation
 
 struct RemoteCatalogueRepository: CatalogueRepository {
-    let client: APIClient
+    let client: any HTTPClient
 
     func featuredProducts() async throws -> [Product] {
         let response: ItemsDTO<ProductDTO> = try await client.get("api/products/featured")
@@ -33,7 +33,7 @@ struct RemoteCatalogueRepository: CatalogueRepository {
 }
 
 struct RemoteEnquiryRepository: EnquiryRepository {
-    let client: APIClient
+    let client: any HTTPClient
 
     func submit(_ enquiry: EnquiryRequest) async throws -> EnquiryReceipt {
         let response: EnquiryReceiptDTO = try await client.post("api/enquiries", body: EnquiryRequestDTO(enquiry))
