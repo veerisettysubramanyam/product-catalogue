@@ -3,15 +3,19 @@ import express from "express";
 import helmet from "helmet";
 
 import type { CatalogueService } from "./catalogue/catalogueService.js";
+import type { EnquiryService } from "./enquiries/enquiryService.js";
 import { catalogueRoutes } from "./http/catalogueRoutes.js";
+import { enquiryRoutes } from "./http/enquiryRoutes.js";
 import { errorHandler, notFoundHandler } from "./http/errors.js";
 
 export interface AppDependencies {
   catalogue: CatalogueService;
+  enquiries: EnquiryService;
 }
 
 export interface AppOptions {
   corsOrigin: string;
+  enquiryRateLimitPerMinute: number;
 }
 
 /**
@@ -31,6 +35,7 @@ export function createApp(deps: AppDependencies, options: AppOptions) {
   });
 
   app.use("/api", catalogueRoutes(deps.catalogue));
+  app.use("/api", enquiryRoutes(deps.enquiries, { ratePerMinute: options.enquiryRateLimitPerMinute }));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

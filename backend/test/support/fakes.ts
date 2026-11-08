@@ -1,6 +1,8 @@
 import { createApp } from "../../src/app.js";
 import { CatalogueService } from "../../src/catalogue/catalogueService.js";
 import { StaticCurationProvider, type Curation } from "../../src/catalogue/curation.js";
+import type { EmailMessage, EmailSender } from "../../src/email/emailSender.js";
+import { EnquiryService } from "../../src/enquiries/enquiryService.js";
 import { UpstreamError } from "../../src/http/errors.js";
 import { slugify, toDisplayName, type Category, type Product } from "../../src/products/product.js";
 import type { ProductRepository } from "../../src/products/productRepository.js";
@@ -83,11 +85,35 @@ export const sampleCuration: Curation = {
   topRatedByCategory: { "mens-clothing": ["2", "1"] },
 };
 
-export function makeTestApp(options: { repository?: ProductRepository; curation?: Curation } = {}) {
+/** Records emails instead of sending them. Set `failWith` to simulate a provider outage. */
+export class RecordingEmailSender implements EmailSender {
+  readonly sent: EmailMessage[] = [];
+  failWith: Error | null = null;
+
+  async send(message: EmailMessage): Promise<void> {
+    if (this.failWith) throw this.failWith;
+    this.sent.push(message);
+  }
+}
+
+export const SALES_INBOX = "sales@test.local";
+
+export function makeTestApp(
+  options: {
+    repository?: ProductRepository;
+    curation?: Curation;
+    email?: EmailSender;
+    enquiryRateLimitPerMinute?: number;
+  } = {},
+) {
   const repository = options.repository ?? new InMemoryProductRepository(sampleProducts);
   const catalogue = new CatalogueService(
     repository,
     new StaticCurationProvider(options.curation ?? sampleCuration),
   );
-  return createApp({ catalogue }, { corsOrigin: "*" });
+  const enquiries = new EnquiryService(catalogue, options.email ?? new RecordingEmailSender(), SALES_INBOX);
+  return createApp(
+    { catalogue, enquiries },
+    { corsOrigin: "*", enquiryRateLimitPerMinute: options.enquiryRateLimitPerMinute ?? 1000 },
+  );
 }
