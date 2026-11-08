@@ -1,10 +1,10 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
 
-import { createApp } from "../src/app.js";
+import { makeTestApp } from "./support/fakes.js";
 
 describe("app shell", () => {
-  const app = createApp({ corsOrigin: "*" });
+  const app = makeTestApp();
 
   it("reports healthy", async () => {
     const res = await request(app).get("/health");
